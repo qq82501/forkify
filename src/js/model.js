@@ -1,5 +1,6 @@
 //Model should include Business Logic & Data-Fetching & state
 'use strict';
+import { isGeneratorFunction } from 'regenerator-runtime';
 import { API_URL, RESULTS_PER_PAGE } from './config';
 import { getJSON } from './helpers';
 
@@ -75,13 +76,30 @@ export const getUpdateServings = function (newServings) {
   state.recipe.servings = newServings;
 };
 
+const persistBookmarks = function () {
+  localStorage.setItem('bookmark', JSON.stringify(state.bookmarks));
+};
+
 export const addBookmark = function (recipe) {
   state.bookmarks.push(recipe);
   if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+  persistBookmarks();
 };
 
 export const deleteBookmark = function (id) {
   const index = state.bookmarks.findIndex(bookmark => bookmark.id === id);
   state.bookmarks.splice(index, 1);
   if (id === state.recipe.id) state.recipe.bookmarked = false;
+  persistBookmarks();
 };
+
+const init = function () {
+  const data = JSON.parse(localStorage.getItem('bookmark'));
+  if (data) state.bookmarks = data;
+};
+init();
+
+// const clearBookmark = function () {
+//   localStorage.clear('bookmark');
+// };
+// clearBookmark();
