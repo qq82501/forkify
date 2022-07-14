@@ -75,7 +75,7 @@ export const getUpdateServings = function (newServings) {
   state.recipe.servings = newServings;
 };
 
-export const addgitBookmark = function (recipe) {
+export const addBookmark = function (recipe) {
   state.bookmarks.push(recipe);
   if (recipe.id === state.recipe.id) state.recipe.bookmarked = true;
 };

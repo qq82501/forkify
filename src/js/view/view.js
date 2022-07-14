@@ -4,11 +4,12 @@ import icon from 'url:../../img/icons.svg';
 export default class View {
   _data;
 
-  render(data) {
+  render(data, render = true) {
     if (!data || (Array.isArray(data) && data.length === 0))
       return this.renderErrorMessage();
     this._data = data;
     const html = this._generateMarkup();
+    if (!render) return html;
     this._clear();
     this._parentEl.insertAdjacentHTML('afterbegin', html);
   }
@@ -23,11 +24,11 @@ export default class View {
       const curEl = currentElements[i];
       if (
         !newEl.isEqualNode(curEl) &&
-        newEl.firstChild?.nodeValue.trim() !== '' &&
+        newEl.firstChild?.nodeValue.trim() !== ''
         //adding additional condition to solve cannot reat "undefined" of nodeValue QAing
-        newEl.firstChild?.nodeValue.trim() !== undefined
+        // newEl.firstChild?.nodeValue.trim() !== undefined
       ) {
-        curEl.firstChild.nodeValue = newEl.firstChild.nodeValue;
+        curEl.textContent = newEl.textContent;
       }
       if (!newEl.isEqualNode(curEl)) {
         const newAttributes = Array.from(newEl.attributes);

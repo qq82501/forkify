@@ -545,6 +545,8 @@ var _searchResultViewJsDefault = parcelHelpers.interopDefault(_searchResultViewJ
 var _regeneratorRuntime = require("regenerator-runtime");
 var _paginationViewJs = require("./view/paginationView.js");
 var _paginationViewJsDefault = parcelHelpers.interopDefault(_paginationViewJs);
+var _bookmarksViewJs = require("./view/bookmarksView.js");
+var _bookmarksViewJsDefault = parcelHelpers.interopDefault(_bookmarksViewJs);
 const searchResult = document.querySelector(".search-results");
 // https://forkify-api.herokuapp.com/v2
 ///////////////////////////////////////
@@ -559,6 +561,7 @@ const controlRecipe = async function() {
         await _modelJs.showRecipe(id);
         console.log(_modelJs.state.recipe);
         (0, _recipeViewJsDefault.default).render(_modelJs.state.recipe);
+        (0, _bookmarksViewJsDefault.default).update(_modelJs.state.bookmarks);
     } catch (err) {
         (0, _recipeViewJsDefault.default).renderErrorMessage();
         console.error(err);
@@ -589,13 +592,10 @@ const controlUpdateServings = function(newServings) {
     (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
 };
 const controlBookmark = function() {
-    if (!_modelJs.state.recipe.bookmarked) {
-        _modelJs.addBookmark(_modelJs.state.recipe);
-        (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
-    } else {
-        _modelJs.deleteBookmark(_modelJs.state.recipe.id);
-        (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
-    }
+    if (!_modelJs.state.recipe.bookmarked) _modelJs.addBookmark(_modelJs.state.recipe);
+    else _modelJs.deleteBookmark(_modelJs.state.recipe.id);
+    (0, _recipeViewJsDefault.default).update(_modelJs.state.recipe);
+    (0, _bookmarksViewJsDefault.default).render(_modelJs.state.bookmarks);
 };
 const init = function() {
     (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipe);
@@ -606,7 +606,7 @@ const init = function() {
 };
 init();
 
-},{"core-js/modules/web.immediate.js":"49tUX","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","./view/SearchView.js":"jlOjR","./view/searchResultView.js":"dmDT2","regenerator-runtime":"dXNgZ","./view/paginationView.js":"9Reww"}],"49tUX":[function(require,module,exports) {
+},{"core-js/modules/web.immediate.js":"49tUX","regenerator-runtime/runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./model.js":"Y4A21","./view/recipeView.js":"7Olh7","./view/SearchView.js":"jlOjR","./view/searchResultView.js":"dmDT2","regenerator-runtime":"dXNgZ","./view/paginationView.js":"9Reww","./view/bookmarksView.js":"uOrlR"}],"49tUX":[function(require,module,exports) {
 // TODO: Remove this module from `core-js@4` since it's split to modules listed below
 require("../modules/web.clear-immediate");
 require("../modules/web.set-immediate");
@@ -2844,10 +2844,11 @@ var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 "use strick";
 class View {
     _data;
-    render(data) {
+    render(data, render = true) {
         if (!data || Array.isArray(data) && data.length === 0) return this.renderErrorMessage();
         this._data = data;
         const html = this._generateMarkup();
+        if (!render) return html;
         this._clear();
         this._parentEl.insertAdjacentHTML("afterbegin", html);
     }
@@ -2859,8 +2860,7 @@ class View {
         const currentElements = Array.from(this._parentEl.querySelectorAll("*"));
         newElements.forEach((newEl, i)=>{
             const curEl = currentElements[i];
-            if (!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() !== "" && //adding additional condition to solve cannot reat "undefined" of nodeValue QAing
-            newEl.firstChild?.nodeValue.trim() !== undefined) curEl.firstChild.nodeValue = newEl.firstChild.nodeValue;
+            if (!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() !== "") curEl.textContent = newEl.textContent;
             if (!newEl.isEqualNode(curEl)) {
                 const newAttributes = Array.from(newEl.attributes);
                 newAttributes.forEach((newAttribute)=>{
@@ -2938,6 +2938,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _viewJs = require("./view.js");
 var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _previewViewJs = require("./previewView.js");
+var _previewViewJsDefault = parcelHelpers.interopDefault(_previewViewJs);
 "use strick";
 class searchResultView extends (0, _viewJsDefault.default) {
     _parentEl = document.querySelector(".results");
@@ -2947,28 +2949,40 @@ class searchResultView extends (0, _viewJsDefault.default) {
         // if (pages > 1) _generatePageButton();
         // const firstPageResults = this._data.slice(0, 10);
         // return firstPageResults.map(this._generateResultsMarkup).join('');
-        return this._data.map(this._generateResultsMarkup).join("");
+        //this._data = bookmarks[]
+        return this._data.map((result)=>(0, _previewViewJsDefault.default).render(result, false)).join("");
     }
-    _generateResultsMarkup(result) {
+}
+exports.default = new searchResultView();
+
+},{"./view.js":"4wVyX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./previewView.js":"8eAfY"}],"8eAfY":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _view = require("./view");
+var _viewDefault = parcelHelpers.interopDefault(_view);
+"use strick";
+class PreviewView extends (0, _viewDefault.default) {
+    _parentEl = "";
+    _generateMarkup() {
         const id = window.location.hash.slice(1);
         return `
     <li class="preview">
-    <a class="preview__link ${id === result.id ? "preview__link--active" : ""}" href="#${result.id}">
+    <a class="preview__link ${id === this._data.id ? "preview__link--active" : ""}" href="#${this._data.id}">
       <figure class="preview__fig">
-        <img src="${result.imageURL}" alt="${result.title}" />
+        <img src="${this._data.imageURL}" alt="${this._data.title}" />
       </figure>
       <div class="preview__data">
-        <h4 class="preview__title">${result.title}</h4>
-        <p class="preview__publisher">${result.publisher}</p>
+        <h4 class="preview__title">${this._data.title}</h4>
+        <p class="preview__publisher">${this._data.publisher}</p>
       </div>
     </a>
   </li>
     `;
     }
 }
-exports.default = new searchResultView();
+exports.default = new PreviewView();
 
-},{"./view.js":"4wVyX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Reww":[function(require,module,exports) {
+},{"./view":"4wVyX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9Reww":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _view = require("./view");
@@ -3017,6 +3031,27 @@ class PaginationView extends (0, _viewDefault.default) {
 }
 exports.default = new PaginationView();
 
-},{"./view":"4wVyX","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["fA0o9","aenu9"], "aenu9", "parcelRequire3a11")
+},{"./view":"4wVyX","url:../../img/icons.svg":"loVOp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"uOrlR":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _viewJs = require("./view.js");
+var _viewJsDefault = parcelHelpers.interopDefault(_viewJs);
+var _previewViewJs = require("./previewView.js");
+var _previewViewJsDefault = parcelHelpers.interopDefault(_previewViewJs);
+"use strick";
+class BookmarksView extends (0, _viewJsDefault.default) {
+    _parentEl = document.querySelector(".bookmarks__list");
+    _errorMessage = `No bookmarks yet. Find a nice recipe and bookmark it :)`;
+    _generateMarkup() {
+        // const pages = Math.ceil(this._data.length / 10);
+        // if (pages > 1) _generatePageButton();
+        // const firstPageResults = this._data.slice(0, 10);
+        // return firstPageResults.map(this._generateResultsMarkup).join('');
+        return this._data.map((bookmark)=>(0, _previewViewJsDefault.default).render(bookmark, false)).join("");
+    }
+}
+exports.default = new BookmarksView();
+
+},{"./view.js":"4wVyX","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./previewView.js":"8eAfY"}]},["fA0o9","aenu9"], "aenu9", "parcelRequire3a11")
 
 //# sourceMappingURL=index.e37f48ea.js.map
