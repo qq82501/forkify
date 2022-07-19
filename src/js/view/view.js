@@ -4,6 +4,12 @@ import icon from 'url:../../img/icons.svg';
 export default class View {
   _data;
 
+  /**
+   * @param {object|object[]} data The data you want to render
+   * @param {boolean} [render=true] render If render = false, only generate HTML markup but not render data.
+   * @returns {undefined|string} If render = false, return HTML markup.
+   * @author Cindy
+   */
   render(data, render = true) {
     if (!data || (Array.isArray(data) && data.length === 0))
       return this.renderErrorMessage();
@@ -38,7 +44,9 @@ export default class View {
       }
     });
   }
-
+  /**
+   * Render spinner when data is loading.
+   */
   renderSpinner() {
     const html = ` <div class="spinner">
         <svg>
@@ -49,6 +57,10 @@ export default class View {
     this._parentEl.insertAdjacentHTML('afterbegin', html);
   }
 
+  /**
+   * When problem occurs, shows error message on user interface.
+   * @param {string} msg Error message showed to users
+   */
   renderErrorMessage(msg = this._errorMessage) {
     const html = `       
     <div class="error">
@@ -62,7 +74,10 @@ export default class View {
     this._clear();
     this._parentEl.insertAdjacentHTML('afterbegin', html);
   }
-
+  /**
+   * When specific action runs smoothly, shows message to let user know the task is done.
+   * @param {string} msg successful message showed to users
+   */
   renderSuccessMessage(msg = this._successMessage) {
     const html = `        
     <div class="message">
@@ -77,6 +92,9 @@ export default class View {
     this._parentEl.insertAdjacentHTML('afterbegin', html);
   }
 
+  /**
+   * Clear parent element's current inner HTML and ready for rendering other data.
+   */
   _clear() {
     this._parentEl.innerHTML = '';
   }
