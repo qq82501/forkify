@@ -29,7 +29,6 @@ const controlRecipe = async function () {
       model.getSearchResultByPage(model.state.search.currentPage)
     );
     await model.showRecipe(id);
-    console.log(model.state.recipe);
     recipeView.render(model.state.recipe);
   } catch (err) {
     recipeView.renderErrorMessage();
@@ -50,7 +49,6 @@ const controlSearchResult = async function () {
     await model.loadSearchResult(query);
     await searchResultView.render(model.getSearchResultByPage());
     paginationView.render(model.state.search);
-    console.log(model.state.search.result);
   } catch (err) {
     // searchResultView.renderErrorMessage(err);
   }
