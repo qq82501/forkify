@@ -2,7 +2,7 @@ import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import * as model from './model.js';
 import recipeView from './view/recipeView.js';
-import searchView from './view/SearchView.js';
+import searchView from './view/searchView.js';
 import searchResultView from './view/searchResultView.js';
 import { async } from 'regenerator-runtime';
 import paginationView from './view/paginationView.js';
